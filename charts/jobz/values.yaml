@@ -1,0 +1,78 @@
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+server:
+  name: server
+
+  fullnameOverride: ""
+
+  image:
+    repository: huan231/jobz
+    pullPolicy: IfNotPresent
+    tag: ""
+
+  persistence:
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: "1Gi"
+    annotations: {}
+
+  service:
+    type: ClusterIP
+    port: 80
+    annotations: {}
+
+  ingress:
+    className: ""
+    annotations: {}
+    host: ""
+    path: /
+    pathType: Prefix
+    tls: []
+
+  serviceAccount:
+    annotations: {}
+    name: ""
+
+  resources: {}
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+  securityContext: {}
+
+  containerPort: 8080
+
+ui:
+  name: ui
+
+  fullnameOverride: ""
+
+  image:
+    repository: huan231/jobzui
+    pullPolicy: IfNotPresent
+    tag: ""
+
+  service:
+    type: ClusterIP
+    port: 80
+    annotations: {}
+
+  ingress:
+    className: ""
+    annotations: {}
+    host: ""
+    path: /
+    pathType: Prefix
+    tls: []
+
+  resources: {}
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+  securityContext: {}
+
+  containerPort: 80

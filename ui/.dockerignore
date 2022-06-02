@@ -1,0 +1,9 @@
+*
+
+!nginx
+!src
+!envsubst-on-template.sh
+!index.template.html
+!package.json
+!package-lock.json
+!vite.config.ts

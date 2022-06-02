@@ -1,0 +1,10 @@
+# npm
+npm-debug.log*
+
+# dependencies
+/node_modules/
+
+# Vite
+/dist/
+/dist-ssr/
+*.local

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "jobz.server.fullname" . }}
+  labels:
+    {{- include "jobz.server.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.server.persistence.storageClass }}
+  {{- if (eq "-" .Values.server.persistence.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ .Values.server.persistence.storageClass | quote }}
+  {{- end }}
+  {{- end }}
+  accessModes:
+    - {{ .Values.server.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.server.persistence.size | quote }}

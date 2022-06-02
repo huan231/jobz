@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "jobz.server.fullname" . }}
+  labels:
+    {{- include "jobz.server.labels" . | nindent 4 }}
+  {{- with .Values.server.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.server.ingress.className }}
+  {{- if .Values.server.ingress.tls }}
+  tls:
+    {{ toYaml .Values.server.ingress.tls | indent 4 }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.server.ingress.host | quote }}
+      http:
+        paths:
+          - path: {{ .Values.server.ingress.path }}
+            pathType: {{ .Values.server.ingress.pathType }}
+            backend:
+              service:
+                name: {{ include "jobz.server.fullname" . }}
+                port:
+                  number: {{ .Values.server.service.port }}
