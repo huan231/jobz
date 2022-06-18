@@ -1,6 +1,6 @@
 apiVersion: v2
 name: jobz
-description: A Helm chart for Kubernetes
+description: Monitoring system for k8s cron jobs
 type: application
 version: 0.1.0
 appVersion: "0.1.0"
