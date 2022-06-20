@@ -32,9 +32,7 @@ func TestListSuccessResponse(t *testing.T) {
 }
 
 func TestListErrorResponse(t *testing.T) {
-	err := fmt.Errorf("unexpected error")
-
-	s := &serviceStub{err: err}
+	s := &serviceStub{err: fmt.Errorf("unexpected error")}
 
 	c := NewController(s)
 
