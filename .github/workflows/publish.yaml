@@ -21,18 +21,22 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - run: |
+          VERSION=${{ github.ref_name }}
+          echo "VERSION=${VERSION:1}" >> $GITHUB_ENV
+
       - uses: docker/build-push-action@v3
         with:
           context: .
           push: true
-          tags: huan231/jobz:${{ github.ref_name }}
+          tags: huan231/jobz:${{ env.VERSION }}
 
       - uses: docker/build-push-action@v3
         with:
           context: ./ui/
           file: ./ui/Dockerfile
           push: true
-          tags: huan231/jobzui:${{ github.ref_name }}
+          tags: huan231/jobzui:${{ env.VERSION }}
 
   publish-chart:
     runs-on: ubuntu-latest
