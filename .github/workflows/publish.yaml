@@ -2,8 +2,8 @@ name: Publish images to Docker Hub and Helm chart to GitHub Releases
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - master
 
 jobs:
   publish-images:
@@ -24,8 +24,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - run: |
-          VERSION=${{ github.ref_name }}
-          echo "VERSION=${VERSION:1}" >> $GITHUB_ENV
+          echo "VERSION=$(grep -Po "(?<=version: )\d+\.\d+\.\d+" ./charts/jobz/Chart.yaml)" >> $GITHUB_ENV
 
       - uses: docker/build-push-action@v3
         with:
