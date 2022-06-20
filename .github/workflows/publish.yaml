@@ -31,12 +31,17 @@ jobs:
           push: true
           tags: huan231/jobz:${{ env.VERSION }}
 
+      - run: |
+          echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
       - uses: docker/build-push-action@v3
         with:
           context: ./ui/
           file: ./ui/Dockerfile
           push: true
           tags: huan231/jobzui:${{ env.VERSION }}
+          build-args: |
+            COMMIT_HASH=${{ env.COMMIT_HASH }}
 
   publish-chart:
     runs-on: ubuntu-latest
