@@ -20,15 +20,13 @@ func TestList(t *testing.T) {
 }
 
 func TestListError(t *testing.T) {
-	errUnexpected := fmt.Errorf("unexpected error")
-
-	l := &listerMock{err: errUnexpected}
+	l := &listerMock{err: fmt.Errorf("unexpected error")}
 
 	s := NewService(l)
 
 	_, err := s.List()
 
-	assert.Equal(t, errUnexpected, err)
+	assert.NotNil(t, err)
 }
 
 type listerMock struct {
