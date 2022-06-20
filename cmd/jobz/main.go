@@ -93,7 +93,7 @@ func main() {
 	jobController := job.NewController(jobService)
 	eventsController := events.NewController(hub)
 
-	cronJobEventHandler := cronjob.NewEventHandler(cronJobService, hub)
+	cronJobEventHandler := cronjob.NewEventHandler(hub)
 	jobEventHandler := job.NewEventHandler(jobService, hub, cronJobLister, jobLister)
 
 	cronJobInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{

@@ -12,12 +12,11 @@ type EventHandler interface {
 }
 
 type eventHandler struct {
-	s Service
 	h events.Hub
 }
 
-func NewEventHandler(s Service, h events.Hub) EventHandler {
-	return &eventHandler{s, h}
+func NewEventHandler(h events.Hub) EventHandler {
+	return &eventHandler{h}
 }
 
 func (e *eventHandler) OnCronJobAdd(cronJob *batchv1.CronJob) {
