@@ -31,6 +31,10 @@ func (e *eventHandler) OnCronJobUpdate(oldCronJob, newCronJob *batchv1.CronJob) 
 	e.h.Publish(events.Event{Type: "cronjobupdate", Payload: NewCronJob(newCronJob)})
 }
 
+type cronJobDeletePayload struct {
+	ID string `json:"id"`
+}
+
 func (e *eventHandler) OnCronJobDelete(cronJob *batchv1.CronJob) {
-	e.h.Publish(events.Event{Type: "cronjobdelete", Payload: map[string]any{"id": string(cronJob.UID)}})
+	e.h.Publish(events.Event{Type: "cronjobdelete", Payload: cronJobDeletePayload{ID: string(cronJob.UID)}})
 }
