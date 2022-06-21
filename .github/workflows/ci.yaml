@@ -4,10 +4,8 @@ on:
   push:
     paths-ignore:
       - '*.md'
-    tags-ignore:
-      - '**'
-    branches:
-      - '**'
+    branches-ignore:
+      - master
 
 permissions:
   contents: read
