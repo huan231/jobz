@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"testing"
 	"time"
 )
@@ -11,7 +12,8 @@ import (
 func TestCreateSuccess(t *testing.T) {
 	id, cronJobID := "a4757ca2-f45c-44ee-9db3-cb258d606b77", "99013750-5341-4dc5-bea7-6e3ae807a475"
 
-	r := &repositoryStruct{ok: true}
+	r := &repositoryStruct{}
+	r.On("Add").Return(true, nil)
 
 	s := NewService(r)
 
@@ -26,7 +28,8 @@ func TestCreateSuccess(t *testing.T) {
 }
 
 func TestCreateAlreadyExists(t *testing.T) {
-	r := &repositoryStruct{ok: false}
+	r := &repositoryStruct{}
+	r.On("Add").Return(false, nil)
 
 	s := NewService(r)
 
@@ -36,7 +39,8 @@ func TestCreateAlreadyExists(t *testing.T) {
 }
 
 func TestCreateError(t *testing.T) {
-	r := &repositoryStruct{err: fmt.Errorf("unexpected error")}
+	r := &repositoryStruct{}
+	r.On("Add").Return(false, fmt.Errorf("unexpected error"))
 
 	s := NewService(r)
 
@@ -46,7 +50,9 @@ func TestCreateError(t *testing.T) {
 }
 
 func TestSucceedSuccess(t *testing.T) {
-	r := &repositoryStruct{ok: true, job: &Job{}}
+	r := &repositoryStruct{}
+	r.On("CompleteByID").Return(true, nil)
+	r.On("FindByID").Return(&Job{}, nil)
 
 	s := NewService(r)
 
@@ -56,7 +62,8 @@ func TestSucceedSuccess(t *testing.T) {
 }
 
 func TestSucceedAlreadyCompleted(t *testing.T) {
-	r := &repositoryStruct{ok: false}
+	r := &repositoryStruct{}
+	r.On("CompleteByID").Return(false, nil)
 
 	s := NewService(r)
 
@@ -66,7 +73,8 @@ func TestSucceedAlreadyCompleted(t *testing.T) {
 }
 
 func TestSucceedError(t *testing.T) {
-	r := &repositoryStruct{err: fmt.Errorf("unexpected error")}
+	r := &repositoryStruct{}
+	r.On("CompleteByID").Return(false, fmt.Errorf("unexpected error"))
 
 	s := NewService(r)
 
@@ -76,7 +84,9 @@ func TestSucceedError(t *testing.T) {
 }
 
 func TestFailSuccess(t *testing.T) {
-	r := &repositoryStruct{ok: true, job: &Job{}}
+	r := &repositoryStruct{}
+	r.On("CompleteByID").Return(true, nil)
+	r.On("FindByID").Return(&Job{}, nil)
 
 	s := NewService(r)
 
@@ -86,7 +96,8 @@ func TestFailSuccess(t *testing.T) {
 }
 
 func TestFailAlreadyCompleted(t *testing.T) {
-	r := &repositoryStruct{ok: false}
+	r := &repositoryStruct{}
+	r.On("CompleteByID").Return(false, nil)
 
 	s := NewService(r)
 
@@ -96,7 +107,8 @@ func TestFailAlreadyCompleted(t *testing.T) {
 }
 
 func TestFailError(t *testing.T) {
-	r := &repositoryStruct{err: fmt.Errorf("unexpected error")}
+	r := &repositoryStruct{}
+	r.On("CompleteByID").Return(false, fmt.Errorf("unexpected error"))
 
 	s := NewService(r)
 
@@ -106,7 +118,8 @@ func TestFailError(t *testing.T) {
 }
 
 func TestListSuccess(t *testing.T) {
-	r := &repositoryStruct{jobs: []Job{{}}}
+	r := &repositoryStruct{}
+	r.On("List").Return([]Job{{}}, nil)
 
 	s := NewService(r)
 
@@ -116,7 +129,8 @@ func TestListSuccess(t *testing.T) {
 }
 
 func TestListError(t *testing.T) {
-	r := &repositoryStruct{err: fmt.Errorf("unexpected error")}
+	r := &repositoryStruct{}
+	r.On("List").Return(nil, fmt.Errorf("unexpected error"))
 
 	s := NewService(r)
 
@@ -127,6 +141,7 @@ func TestListError(t *testing.T) {
 
 func TestDeleteSuccess(t *testing.T) {
 	r := &repositoryStruct{}
+	r.On("DeleteByCronJobID").Return(nil)
 
 	s := NewService(r)
 
@@ -136,7 +151,8 @@ func TestDeleteSuccess(t *testing.T) {
 }
 
 func TestDeleteError(t *testing.T) {
-	r := &repositoryStruct{err: fmt.Errorf("unexpected error")}
+	r := &repositoryStruct{}
+	r.On("DeleteByCronJobID").Return(fmt.Errorf("unexpected error"))
 
 	s := NewService(r)
 
@@ -146,28 +162,39 @@ func TestDeleteError(t *testing.T) {
 }
 
 type repositoryStruct struct {
-	ok   bool
-	job  *Job
-	jobs []Job
-	err  error
+	mock.Mock
 }
 
 func (r *repositoryStruct) Add(context.Context, Job) (bool, error) {
-	return r.ok, r.err
+	args := r.Called()
+
+	return args.Bool(0), args.Error(1)
 }
 
 func (r *repositoryStruct) List(context.Context) ([]Job, error) {
-	return r.jobs, r.err
+	args := r.Called()
+
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).([]Job), args.Error(1)
 }
 
 func (r *repositoryStruct) CompleteByID(context.Context, string, Status, time.Time) (bool, error) {
-	return r.ok, r.err
+	args := r.Called()
+
+	return args.Bool(0), args.Error(1)
 }
 
 func (r *repositoryStruct) DeleteByCronJobID(context.Context, string) error {
-	return r.err
+	args := r.Called()
+
+	return args.Error(0)
 }
 
 func (r *repositoryStruct) FindByID(context.Context, string) (*Job, error) {
-	return r.job, r.err
+	args := r.Called()
+
+	return args.Get(0).(*Job), args.Error(1)
 }

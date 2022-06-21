@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,7 +14,8 @@ import (
 )
 
 func TestListSuccessResponse(t *testing.T) {
-	s := &serviceStub{jobs: []Job{{Status: Running}}}
+	s := &serviceStub{}
+	s.On("List").Return([]Job{{Status: Running}}, nil)
 
 	c := NewController(s)
 
@@ -34,7 +36,8 @@ func TestListSuccessResponse(t *testing.T) {
 }
 
 func TestListErrorResponse(t *testing.T) {
-	s := &serviceStub{err: fmt.Errorf("unexpected error")}
+	s := &serviceStub{}
+	s.On("List").Return(nil, fmt.Errorf("unexpected error"))
 
 	c := NewController(s)
 
@@ -55,8 +58,7 @@ func TestListErrorResponse(t *testing.T) {
 }
 
 type serviceStub struct {
-	err  error
-	jobs []Job
+	mock.Mock
 }
 
 func (s *serviceStub) Create(context.Context, string, string, time.Time) (*Job, error) {
@@ -72,11 +74,13 @@ func (s *serviceStub) Fail(context.Context, string, time.Time) (*Job, error) {
 }
 
 func (s *serviceStub) List(context.Context) ([]Job, error) {
-	if s.err != nil {
-		return nil, s.err
+	args := s.Called()
+
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
 	}
 
-	return s.jobs, nil
+	return args.Get(0).([]Job), args.Error(1)
 }
 
 func (s *serviceStub) Delete(context.Context, string) error {
