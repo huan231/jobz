@@ -3,6 +3,7 @@ package cronjob
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	v1 "k8s.io/client-go/listers/batch/v1"
@@ -10,17 +11,21 @@ import (
 )
 
 func TestList(t *testing.T) {
-	l := &listerMock{t: t, cronJobs: []*batchv1.CronJob{{}}}
+	l := &listerMock{}
+	l.On("List", mock.Anything).Return([]*batchv1.CronJob{{}}, nil)
 
 	s := NewService(l)
 
 	cronJobs, _ := s.List()
 
+	l.AssertCalled(t, "List", labels.Everything())
+
 	assert.NotEmpty(t, cronJobs)
 }
 
 func TestListError(t *testing.T) {
-	l := &listerMock{err: fmt.Errorf("unexpected error")}
+	l := &listerMock{}
+	l.On("List", mock.Anything).Return(nil, fmt.Errorf("unexpected error"))
 
 	s := NewService(l)
 
@@ -30,19 +35,17 @@ func TestListError(t *testing.T) {
 }
 
 type listerMock struct {
-	err      error
-	t        *testing.T
-	cronJobs []*batchv1.CronJob
+	mock.Mock
 }
 
 func (l *listerMock) List(selector labels.Selector) ([]*batchv1.CronJob, error) {
-	if l.err != nil {
-		return nil, l.err
+	args := l.Called(selector)
+
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
 	}
 
-	assert.Equal(l.t, labels.Everything(), selector)
-
-	return l.cronJobs, nil
+	return args.Get(0).([]*batchv1.CronJob), args.Error(1)
 }
 
 func (l *listerMock) CronJobs(string) v1.CronJobNamespaceLister {
