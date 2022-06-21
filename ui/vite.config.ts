@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       input: {
-        app: mode === 'production' ? new URL('./index.template.html', import.meta.url).pathname : undefined,
+        app: new URL(mode === 'production' ? './index.template.html' : './index.html', import.meta.url).pathname,
       },
     },
   },
